@@ -14,7 +14,7 @@ int Correction_Count_height = 0;
 int Correction_Count_width = 0;
 float abcd = 0;
 double sqrt_xy = 0;
-float Delta_T = 20; // 현재는 일단 10Khz에 해당하는 것으로 정해서
+float Delta_T = 30; // 현재는 일단 10Khz에 해당하는 것으로 정해서
 float Degree = 0;
 
 
@@ -75,6 +75,8 @@ void Scanner_Init(_Scanner_Control* in)
 	in->Scan_X_Flag = 0;
 	in->Scan_Y_Flag = 0;
 	//in->Scan_radius_dist = in->Scan_radius * in->Scan_x_scale_mm; // 반지름에 대한 보정이 들어가야 하기에 일단 x에 대한 보정으로 맞춤.
+	in->Wobble_ON = 0;
+	in->Speed_Change = 1;
 }
 
 void Scanner_Correction(_Scanner_Control* in)
@@ -352,17 +354,17 @@ void Scanner_Line_Draw_Re(_Scanner_Control* in){
 
 	sqrt_xy = sqrt(pow(in->Scan_x_remain_dist,2) + pow(in->Scan_y_remain_dist,2)); // 남은 x, y 에 대한 대각선 길이
 
-	in->x_vel = in->Scan_stepsize_x * in->Scan_x_remain_dist / sqrt_xy;  // stepsize가 vel역할
-	in->y_vel = in->Scan_stepsize_y * in->Scan_y_remain_dist / sqrt_xy;
+	in->x_vel = (in->Scan_stepsize_x * in->Scan_x_remain_dist / sqrt_xy) / in->Speed_Change; // stepsize가 vel역할
+	in->y_vel = (in->Scan_stepsize_y * in->Scan_y_remain_dist / sqrt_xy) / in->Speed_Change; //
 
-	//////////////////////////////////////////////////////////////////////////////////
-	if((in->Scan_x_dist_virtual != in->Scan_x_temp - 32767 ) && (in->Scan_X_Flag != 1))   //  && (in->Scan_X_Flag != 1)
+	////////////////////////////////////////////////////////////////////////////////////////
+	if((in->Scan_x_dist_virtual != in->Scan_x_temp - 32767 ) && (in->Scan_X_Flag != 1))   // && (in->Scan_X_Flag != 1)
 	{
 		if(in->Scan_x_dist_virtual + 32767 > in->Scan_x_temp)
 		{
 			//in->aa += in->Scan_stepsize_x;
-			in->Scan_x_trans = (in->Scan_x_temp - 32767) + in->x_vel * Delta_T;   // N곱하는 부분 넣어야해   // 원래 in->aa 부분 추가되어있었어
-			in->Scan_x_temp = (in->Scan_x_trans) + 32767; // 원래 (int)(in->Scan_x_trans) + 32767
+			in->Scan_x_trans = (in->Scan_x_temp - 32767) + in->x_vel * Delta_T;   // N곱하는 부분 넣어야해  // 원래 in->aa 부분 추가되어있었어
+			in->Scan_x_temp = (in->Scan_x_trans) + 32767;  // 원래 (int)(in->Scan_x_trans) + 32767
 		}
 		else
 		{
@@ -389,11 +391,11 @@ void Scanner_Line_Draw_Re(_Scanner_Control* in){
 	}
 
 
-	if(((in->Scan_x_dist_virtual + 32767 - 10) <= in->Scan_x_temp) && ((in->Scan_x_dist_virtual + 32767 + 10) >= in->Scan_x_temp)){
+	if(((in->Scan_x_dist_virtual + 32767 - 13) <= in->Scan_x_temp) && ((in->Scan_x_dist_virtual + 32767 + 13) >= in->Scan_x_temp)){
 			in->Scan_X_Flag = 1;
 	}
 
-	if(((in->Scan_y_dist_virtual + 32767 - 10) <= in->Scan_y_temp) && ((in->Scan_y_dist_virtual + 32767 + 10) >= in->Scan_y_temp)){
+	if(((in->Scan_y_dist_virtual + 32767 - 13) <= in->Scan_y_temp) && ((in->Scan_y_dist_virtual + 32767 + 13) >= in->Scan_y_temp)){
 			in->Scan_Y_Flag = 1;
 	}
 
@@ -404,15 +406,6 @@ void Scanner_Line_Draw_Re(_Scanner_Control* in){
 			Correction_Count_height = 0;
 			Correction_Count_width = 0;
 	}
-
-//		if((((in->Scan_x_dist_virtual + 32767 - in->Scan_stepsize_x) <= in->Scan_x_temp) &&
-//				((in->Scan_x_dist_virtual + 32767 + in->Scan_stepsize_x) >= in->Scan_x_temp)) &&
-//				(((in->Scan_y_dist_virtual + 32767 - in->Scan_stepsize_y) <= in->Scan_y_temp) &&
-//						((in->Scan_y_dist_virtual + 32767 + in->Scan_stepsize_y) >= in->Scan_y_temp))){
-//			in->Flag = 0;
-//		    Correction_Count_height = 0;
-//			Correction_Count_width = 0;
-//		}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -482,11 +475,17 @@ void Scanner_Line_Draw_RERE(_Scanner_Control* in)
 
 void Scanner_Wobble_Circle(_Scanner_Control* in)
 {
-	in->Scan_x_wobble = in->Scan_x_temp + in->Radius * in->Scan_x_scale_mm * cos(in->Angle);
-	in->Scan_y_wobble = in->Scan_y_temp + in->Radius * in->Scan_y_scale_mm * sin(in->Angle);
-	in->Angle = in->Angle + 0.2;
-	if(in->Angle >= 360)
-		in->Angle = 0;
+	if(in->Wobble_ON == 1){ // Wobble 들어간 형태
+		in->Scan_x_wobble = in->Scan_x_temp + in->Radius * in->Scan_x_scale_mm * cos(in->Angle);
+		in->Scan_y_wobble = in->Scan_y_temp + in->Radius * in->Scan_y_scale_mm * sin(in->Angle);
+
+		in->Angle = in->Angle + 0.2;
+		if(in->Angle >= 360)
+			in->Angle = 0;
+	}else{ // Wobble 안들어간 형태
+		in->Scan_x_wobble = in->Scan_x_temp;
+		in->Scan_y_wobble = in->Scan_y_temp;
+	}
 }
 
 
