@@ -100,23 +100,25 @@ SRAM_HandleTypeDef hsram3;
 uint8_t gggg[64] = {0x00};
 unsigned char RxBuffer[1];
 int abcdef = 0;
+int *abccccc;
 
 float input_X = 0;
 float input_Y = 0;
 char *Test_Gcode[3][64] = {
-		{"0x00","0x01","0x00","0x00","0x14","0x00","0x00","0x00","0x00","0x00""0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0xff"},
-		{"0x00","0x01","0x00","0x00","0x14","0x00","0x00","0x00","0x14","0x00""0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0xff"},
-		{"0x00","0x01","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00""0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0xff"}
+		{"0x00","0x01","0x00","0x00","0x0A","0x00","0x00","0x00","0x0A","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x28","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0xff"},
+		{"0x00","0x01","0x00","0x00","0x1E","0x00","0x00","0x00","0x0A","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x14","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0xff"},
+		{"0x00","0x01","0x00","0x00","0x1E","0x00","0x00","0x00","0x1E","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x28","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0xff"}
 };
 char *Change_Gcode;
 
 int Gcode_X = 0;
 int Gcode_Y = 0;
 int Gcode_Z = 0;
+int CS = 0;
 
 char Reset_Stage = 0;
 char Limit_Check = 0;
-char Test_Triangle = 0;
+char Test_GCode_Flag = 0;
 int Test_Count = 0;
 
 char Laser_Flag = 0;
@@ -230,7 +232,7 @@ int main(void)
 //   } while((fpga_version < 0b00000000000000000001000000010011) || (fpga_version > 0b00000000000000000001000100010000 ));
 
 
-  /* ?���?? */
+  /* ?���???? */
   do {		// 2020.11.19 doohee : Wait until FPGA ready !!
   	  fpga_version =  *((volatile uint16_t *)FPGA_BASE);
     } while((fpga_version < 0x1013) || (fpga_version > 0x1110 ));
@@ -244,7 +246,7 @@ int main(void)
     __enable_irq();
     Scanner_Init(&Scanner_Control);
 
-    // 초기 ?��치�?? 중앙?���????????????????? ?��치시?���????????????????? ?��?��
+    // 초기 ?��치�?? 중앙?���??????????????????? ?��치시?���??????????????????? ?��?��
     Scanner_Control.Scan_x_temp = 32767;
     Scanner_Control.Scan_y_temp = 32767;
 
@@ -274,12 +276,24 @@ int main(void)
 	  //CDC_Transmit_HS(gggg,strlen(gggg));
 	  //HAL_Delay(1000);
 
+
+	  if(abcdef != 0){
+
+		  abccccc = (int *)malloc(sizeof(int) * abcdef);
+
+		  for(int i = 0;i<abcdef;i++){
+			  abccccc[i] = i;
+		  }
+		  free(abccccc);
+		  abcdef = 0;
+	  }
+
 	  /*Pulse Test */
 	  fpga_status2.all = *((volatile uint16_t *)FPGA_BASE + 2);
 	  Internal_Cnt.all = *((volatile uint16_t *)FPGA_BASE + 6);
 	  Pulse_From_FPGA.all = *((volatile uint16_t *)FPGA_BASE + 7);
 
-	  // ?��중에 �????????? 바�?�었?�� ?���????????? ?��?��주도�????????? ?��?��?��
+	  // ?��중에 �??????????? 바�?�었?�� ?���??????????? ?��?��주도�??????????? ?��?��?��
 	  *((volatile uint16_t *)FPGA_BASE + 49) = ENC_Clk_Speed.all;
 
 		/* Homing Check */
@@ -321,7 +335,7 @@ int main(void)
 	  		*((volatile uint16_t *)FPGA_BASE + 32) = fpga_cmd0.all;
 	  	}
 
-	  	 /* cmd�??????????? 1?�� ?��?��?��?�� Limit?�� ?��?��?��?�� 경우*/
+	  	 /* cmd�????????????? 1?�� ?��?��?��?�� Limit?�� ?��?��?��?�� 경우*/
 	  	if(Limit_Check == 0){
 	  	if((fpga_status2.bit.LMT_XP == 1) || (fpga_status2.bit.LMT_XN == 1) || (fpga_status2.bit.LMT_YP == 1) || (fpga_status2.bit.LMT_YN == 1)){
 	  		Limit_Check = 1;
@@ -355,7 +369,7 @@ int main(void)
 	  int *pRxBuffer = (int*)UserRxBufferFS;
 	  int *pBufOld = (int*)oldRxBuf;
 
-	  // UserRxBufferFS ?�� ?��로운 명령?�� ?��?��?�� �?????????????????
+	  // UserRxBufferFS ?�� ?��로운 명령?�� ?��?��?�� �???????????????????
 	  if(*(pBufOld+0) != *(pRxBuffer+0))
 	  {
 	  //if(oldRxBuf[0] != UserRxBufferFS[0]) {
@@ -403,9 +417,9 @@ int main(void)
 			old_tm3_cnt = tm3_cnt;
 
 			/* Test Triangle */
-			if(Test_Triangle == 1 && Scanner_Control.Flag == 0){
+			if(Test_GCode_Flag == 1 && Scanner_Control.Flag == 0){
 					  if(Test_Count == 0){
-						  // ?��기에?���?????????? 만든 Gcode �??????????분에?�� x�??????????�??????????, y�??????????�?????????? �???????????��?���?????????? ???��?��
+						  // ?��기에?���???????????? 만든 Gcode �????????????분에?�� x�????????????�????????????, y�????????????�???????????? �?????????????��?���???????????? ???��?��
 						  /////////////////////////////////////////////////////////////
 						/*  Change_Gcode = (char *)Test_Gcode[0][4];
 						  Gcode_X = strtol(Change_Gcode, NULL,16);
@@ -413,44 +427,52 @@ int main(void)
 						  Gcode_Y = strtol(Change_Gcode, NULL,16);
 						  Change_Gcode = (char *)Test_Gcode[0][12];
 						  Gcode_Z = strtol(Change_Gcode, NULL,16);  */
+
 						  Gcode_X = strtol(Test_Gcode[0][4], NULL,16);
 						  Gcode_Y = strtol(Test_Gcode[0][8], NULL,16);
 						  Gcode_Z = strtol(Test_Gcode[0][12], NULL,16);
+						  CS = strtol(Test_Gcode[0][16], NULL,16);
+
 
 						  Scanner_Control.Scan_x = Gcode_X; // 20
 						  Scanner_Control.Scan_y = Gcode_Y; // 0
 						  Scanner_Control.Scan_z = Gcode_Z;
+						  Scanner_Control.Speed_Change = CS;
 						  /////////////////////////////////////////////////////////////
 						  Scanner_Control.Flag = 1;
 						  Test_Count = 1;
 					  }else if(Test_Count == 1){
-						  // ?��기에?���?????????? 만든 Gcode �??????????분에?�� x�??????????�??????????, y�??????????�?????????? �???????????��?���?????????? ???��?��
+						  // ?��기에?���???????????? 만든 Gcode �????????????분에?�� x�????????????�????????????, y�????????????�???????????? �?????????????��?���???????????? ???��?��
 						  /////////////////////////////////////////////////////////////
 						  Gcode_X = strtol(Test_Gcode[1][4], NULL,16);
 						  Gcode_Y = strtol(Test_Gcode[1][8], NULL,16);
 						  Gcode_Z = strtol(Test_Gcode[1][12], NULL,16);
+						  CS = strtol(Test_Gcode[1][16], NULL,16);
 
 						  Scanner_Control.Scan_x = Gcode_X; // 20
 						  Scanner_Control.Scan_y = Gcode_Y; // 20
 						  Scanner_Control.Scan_z = Gcode_Z;
+						  Scanner_Control.Speed_Change = CS;
 						  /////////////////////////////////////////////////////////////
 
 						  Scanner_Control.Flag = 1;
 						  Test_Count = 2;
 					  }else if(Test_Count == 2){
-						  // ?��기에?���?????????? 만든 Gcode �??????????분에?�� x�??????????�??????????, y�??????????�?????????? �???????????��?���?????????? ???��?��
+						  // ?��기에?���???????????? 만든 Gcode �????????????분에?�� x�????????????�????????????, y�????????????�???????????? �?????????????��?���???????????? ???��?��
 						  /////////////////////////////////////////////////////////////
 						  Gcode_X = strtol(Test_Gcode[2][4], NULL,16);
 						  Gcode_Y = strtol(Test_Gcode[2][8], NULL,16);
 						  Gcode_Z = strtol(Test_Gcode[2][12], NULL,16);
+						  CS = strtol(Test_Gcode[2][16], NULL,16);
 
 						  Scanner_Control.Scan_x = Gcode_X; // 0
 						  Scanner_Control.Scan_y = Gcode_Y; // 0
 						  Scanner_Control.Scan_z = Gcode_Z;
+						  Scanner_Control.Speed_Change = CS;
 						  /////////////////////////////////////////////////////////////
 						  Scanner_Control.Flag = 1;
 						  Test_Count = 0;
-						  Test_Triangle = 0;
+						  Test_GCode_Flag = 0;
 					  }
 			}
 
@@ -471,7 +493,7 @@ int main(void)
 			else // Laser_Flag == 0
 			{
 				fpga_cmd0.bit.Laser_Ctrl = 0;
-				*((volatile uint16_t *)FPGA_BASE + 32) = fpga_cmd0.all;  // ?�� �??????????�?????????? ?��중에 ?��?��?��
+				*((volatile uint16_t *)FPGA_BASE + 32) = fpga_cmd0.all;  // ?�� �????????????�???????????? ?��중에 ?��?��?��
 			}
 
 			/* Scanner_ED bit Check */
@@ -965,7 +987,7 @@ static void MX_TIM3_Init(void)
   htim3.Instance = TIM3;
   htim3.Init.Prescaler = 79;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 1999;
+  htim3.Init.Period = 99;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_Base_Init(&htim3) != HAL_OK)

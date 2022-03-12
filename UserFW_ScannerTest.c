@@ -14,7 +14,7 @@ int Correction_Count_height = 0;
 int Correction_Count_width = 0;
 float abcd = 0;
 double sqrt_xy = 0;
-float Delta_T = 30; // 현재는 일단 10Khz에 해당하는 것으로 정해서
+float Delta_T = 15; // 현재는 일단 10Khz에 해당하는 것으로 정해서
 float Degree = 0;
 
 
@@ -362,15 +362,43 @@ void Scanner_Line_Draw_Re(_Scanner_Control* in){
 	{
 		if(in->Scan_x_dist_virtual + 32767 > in->Scan_x_temp)
 		{
-			//in->aa += in->Scan_stepsize_x;
-			in->Scan_x_trans = (in->Scan_x_temp - 32767) + in->x_vel * Delta_T;   // N곱하는 부분 넣어야해  // 원래 in->aa 부분 추가되어있었어
-			in->Scan_x_temp = (in->Scan_x_trans) + 32767;  // 원래 (int)(in->Scan_x_trans) + 32767
+//			in->aa += in->Scan_stepsize_x;
+//			in->bb = 0;
+//			in->aa += in->x_vel * Delta_T;
+//			in->Scan_x_trans = (in->Scan_x_temp - 32767) + in->aa;   // N곱하는 부분 넣어야해  // 원래 in->aa 부분 추가되어있었어
+//			in->Scan_x_temp = (in->Scan_x_trans) + 32767;  // 원래 (int)(in->Scan_x_trans) + 32767
+
+			if(in->x_vel * Delta_T < 1){
+				in->aa += in->x_vel * Delta_T;
+				if(in->aa >= 1){
+					in->Scan_x_trans = (in->Scan_x_temp - 32767) + in->aa;   // N곱하는 부분 넣어야해  // 원래 in->aa 부분 추가되어있었어
+					in->Scan_x_temp = (in->Scan_x_trans) + 32767;  // 원래 (int)(in->Scan_x_trans) + 32767
+					in->aa = 0;
+				}
+			}else{
+				in->Scan_x_trans = (in->Scan_x_temp - 32767) + in->x_vel * Delta_T;  // 원래는 -
+				in->Scan_x_temp = (in->Scan_x_trans) + 32767;
+			}
 		}
 		else
 		{
 			//in->aa -= in->Scan_stepsize_x;
-			in->Scan_x_trans = (in->Scan_x_temp - 32767) + in->x_vel * Delta_T;  // 원래는 -
-			in->Scan_x_temp = (in->Scan_x_trans) + 32767;
+//			in->aa = 0;
+//			in->bb += in->x_vel * Delta_T;
+//			in->Scan_x_trans = (in->Scan_x_temp - 32767) + in->bb;   // N곱하는 부분 넣어야해  // 원래 in->aa 부분 추가되어있었어
+//			in->Scan_x_temp = (in->Scan_x_trans) + 32767;  // 원래 (int)(in->Scan_x_trans) + 32767
+
+			if(-(in->x_vel * Delta_T) < 1){
+				in->bb += in->x_vel * Delta_T;
+				if(-(in->bb) >= 1){
+					in->Scan_x_trans = (in->Scan_x_temp - 32767) + in->bb;   // N곱하는 부분 넣어야해  // 원래 in->aa 부분 추가되어있었어
+					in->Scan_x_temp = (in->Scan_x_trans) + 32767;  // 원래 (int)(in->Scan_x_trans) + 32767
+					in->bb = 0;
+				}
+			}else{
+				in->Scan_x_trans = (in->Scan_x_temp - 32767) + in->x_vel * Delta_T;  // 원래는 -
+				in->Scan_x_temp = (in->Scan_x_trans) + 32767;
+			}
 		}
 	}
 
@@ -379,23 +407,50 @@ void Scanner_Line_Draw_Re(_Scanner_Control* in){
 		if(in->Scan_y_dist_virtual + 32767 > in->Scan_y_temp)
 		{
 			//in->bb += in->Scan_stepsize_y;
-			in->Scan_y_trans = (in->Scan_y_temp - 32767) + in->y_vel * Delta_T;
-			in->Scan_y_temp = (in->Scan_y_trans) + 32767;
+//			in->dd = 0;
+//			in->cc += in->y_vel * Delta_T;
+//			in->Scan_y_trans = (in->Scan_y_temp - 32767) + in->cc;
+//			in->Scan_y_temp = (in->Scan_y_trans) + 32767;
+			if(in->y_vel * Delta_T < 1){
+				in->cc += in->y_vel * Delta_T;
+				if(in->cc >= 1){
+					in->Scan_y_trans = (in->Scan_y_temp - 32767) + in->cc;
+					in->Scan_y_temp = (in->Scan_y_trans) + 32767;
+					in->cc = 0;
+				}
+			}else{
+				in->Scan_y_trans = (in->Scan_y_temp - 32767) + in->y_vel * Delta_T;
+				in->Scan_y_temp = (in->Scan_y_trans) + 32767;
+			}
 		}
 		else
 		{
 			//in->bb -= in->Scan_stepsize_y;
-			in->Scan_y_trans = (in->Scan_y_temp - 32767) + in->y_vel * Delta_T;  // 원래는 -
-			in->Scan_y_temp = (in->Scan_y_trans) + 32767;
+//			in->cc = 0;
+//			in->dd += in->y_vel * Delta_T;
+//			in->Scan_y_trans = (in->Scan_y_temp - 32767) + in->dd;
+//			in->Scan_y_temp = (in->Scan_y_trans) + 32767;
+			if(-(in->y_vel * Delta_T) < 1){
+				in->dd += in->y_vel * Delta_T;
+				if(-(in->dd) >= 1){
+					in->Scan_y_trans = (in->Scan_y_temp - 32767) + in->dd;
+					in->Scan_y_temp = (in->Scan_y_trans) + 32767;
+					in->dd = 0;
+				}
+			}
+			else{
+				in->Scan_y_trans = (in->Scan_y_temp - 32767) + in->y_vel * Delta_T;  // 원래는 -
+				in->Scan_y_temp = (in->Scan_y_trans) + 32767;
+			}
 		}
 	}
 
 
-	if(((in->Scan_x_dist_virtual + 32767 - 13) <= in->Scan_x_temp) && ((in->Scan_x_dist_virtual + 32767 + 13) >= in->Scan_x_temp)){
+	if(((in->Scan_x_dist_virtual + 32767 - 15) <= in->Scan_x_temp) && ((in->Scan_x_dist_virtual + 32767 + 15) >= in->Scan_x_temp)){
 			in->Scan_X_Flag = 1;
 	}
 
-	if(((in->Scan_y_dist_virtual + 32767 - 13) <= in->Scan_y_temp) && ((in->Scan_y_dist_virtual + 32767 + 13) >= in->Scan_y_temp)){
+	if(((in->Scan_y_dist_virtual + 32767 - 15) <= in->Scan_y_temp) && ((in->Scan_y_dist_virtual + 32767 + 15) >= in->Scan_y_temp)){
 			in->Scan_Y_Flag = 1;
 	}
 
