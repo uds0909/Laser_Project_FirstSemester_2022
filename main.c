@@ -20,6 +20,7 @@
 #include "main.h"
 #include "string.h"
 #include "usb_device.h"
+#include "math.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -97,8 +98,8 @@ SRAM_HandleTypeDef hsram3;
 
 //double PI = 3.14159265358979;
 
-float aaaaa = 0;
-float bbbbb = 0;
+float ratio_X = 0;
+float ratio_Y = 0;
 
 uint8_t gggg[64] = {0x00};
 unsigned char RxBuffer[1];
@@ -112,26 +113,47 @@ float input_Y = 0;
 //		{"0x00","0x01","0x00","0x00","0x1E","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x14","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0xff"},
 //		{"0x00","0x01","0x00","0x00","0x1E","0x00","0x00","0x00","0x1E","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x28","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0xff"}
 //};
+
+
+/* G02 일때 */
+// x = 10, y = -7 {"0x00","0x02","0x00","0x00","0x0A","0x00","0x00","0x00","0x07","0x00","0x00","0x01","0x00","0x00","0x00","0x00","0x05","0x00","0x00","0x01","0x0a","0x00","0x00","0x01","0x28","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0xff"},
+// x = -10, y = -7 {"0x00","0x02","0x00","0x00","0x0A","0x00","0x00","0x01","0x07","0x00","0x00","0x01","0x00","0x00","0x00","0x00","0x05","0x00","0x00","0x01","0x0a","0x00","0x00","0x01","0x28","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0xff"},
+// x = -10, y = 7 {"0x00","0x02","0x00","0x00","0x0A","0x00","0x00","0x01","0x07","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x05","0x00","0x00","0x01","0x0a","0x00","0x00","0x01","0x28","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0xff"},
+
+/* G03 일때 */
+// x = 10, y = -7 {"0x00","0x03","0x00","0x00","0x0A","0x00","0x00","0x00","0x07","0x00","0x00","0x01","0x00","0x00","0x00","0x00","0x05","0x00","0x00","0x01","0x0a","0x00","0x00","0x01","0x28","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0xff"},
+// x = -10, y = -7 {"0x00","0x03","0x00","0x00","0x0A","0x00","0x00","0x01","0x07","0x00","0x00","0x01","0x00","0x00","0x00","0x00","0x05","0x00","0x00","0x01","0x0a","0x00","0x00","0x01","0x28","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0xff"},
+// x = -10, y = 7 {"0x00","0x03","0x00","0x00","0x0A","0x00","0x00","0x01","0x07","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x05","0x00","0x00","0x01","0x0a","0x00","0x00","0x01","0x28","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0xff"},
+
+
+
 char *Test_Gcode[3][64] = {
-		{"0x00","0x01","0x00","0x00","0x05","0x00","0x00","0x00","0x0C","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x28","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0xff"},
-		{"0x00","0x02","0x00","0x00","0x0A","0x00","0x00","0x00","0x07","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x05","0x00","0x00","0x01","0x28","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0xff"},
+		{"0x00","0x01","0x00","0x00","0x05","0x00","0x00","0x00","0x0c","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x28","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0xff"},
+		{"0x00","0x03","0x00","0x00","0x0A","0x00","0x00","0x01","0x07","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x05","0x00","0x00","0x01","0x0a","0x00","0x00","0x01","0x28","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0xff"},
 		{"0x00","0x01","0x00","0x00","0x1E","0x00","0x00","0x00","0x1E","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x28","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0x00","0xff"}
 };
 char *Change_Gcode;
 
+int Gcode_Num = 0;
 int Gcode_X = 0;
 int Gcode_Y = 0;
 int Gcode_Z = 0;
 int Gcode_I = 0;
 int Gcode_J = 0;
 int CS = 0;
+int G0203_Flag = 0;
 
 char Reset_Stage = 0;
 char Limit_Check = 0;
 char Test_GCode_Flag = 0;
-int Test_Count = 0;
+int Test_Count = 0;  // 도형만들때 필요한 변수
+int Save_Count = 0;
+int Target_Test_Count = 0;
+int G_Test_Count = 0;
+int Pri_Test_Count = 0;
+char Test_Count_Flag = 0;
+char Part_Degree_Flag = 0;
 
-char Laser_Flag = 0;
 char Check = 0;
 char Center_Wobble_Flag;
 
@@ -187,6 +209,298 @@ static void MX_USART10_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+void GCode_00(){
+	/* G00은 레이저 안키고, 이동만 해야함 (그렇기에 특정위치로 이동하는 부분만 넣어야함)*/
+	Scanner_Control.Laser_Flag = 0;
+
+	/* X, Y값, 속도값 받는 부분 필요해 */
+	//Scanner_Control.scan_x =
+	//Scanner_Control.scan_y =
+	//Scanner_Control.Speed_Change =
+
+	if(Scanner_Control.EX_Scan_x == 0){
+		ratio_X = Scanner_Control.Scan_x;
+		Scanner_Control.Scan_x_temp += 851.3 * ratio_X;
+	}else{
+		ratio_X = Scanner_Control.EX_Scan_x - Scanner_Control.Scan_x;
+		Scanner_Control.Scan_x_temp -= 851.3 * ratio_X;
+	}
+
+	if(Scanner_Control.EX_Scan_y == 0){
+		ratio_Y = Scanner_Control.Scan_y;
+		Scanner_Control.Scan_y_temp += 851.3 * ratio_Y;
+	}else{
+		ratio_Y = Scanner_Control.EX_Scan_y - Scanner_Control.Scan_y;
+		Scanner_Control.Scan_y_temp -= 851.3 * ratio_Y;
+	}
+
+	Scanner_Control.EX_Scan_x = Scanner_Control.Scan_x;  // 이전 x 값 저장
+	Scanner_Control.EX_Scan_y = Scanner_Control.Scan_y;  // 이전 y 값 저장
+
+	Scanner_Control.Flag = 1;
+}
+
+void GCode_01(){
+	/* G01은 레이저 키고 이동해야함 (x,y,f) */
+	Scanner_Control.Laser_Flag = 1;
+
+	/* X, Y값, 속도값 받는 부분 필요해 */
+	Gcode_X = strtol(Test_Gcode[0][4], NULL,16);
+	Gcode_Y = strtol(Test_Gcode[0][8], NULL,16);
+	Gcode_Z = strtol(Test_Gcode[0][12], NULL,16);
+	CS = strtol(Test_Gcode[0][16], NULL,16);
+
+
+	Scanner_Control.Scan_x = Gcode_X; // 20
+	Scanner_Control.Scan_y = Gcode_Y; // 0
+	Scanner_Control.Scan_z = Gcode_Z;
+	Scanner_Control.Speed_Change = CS;
+	/////////////////////////////////////////////////////////////
+	Scanner_Control.Flag = 1;
+}
+
+void GCode_02(){
+	/* G02는 시계방향 */
+	Scanner_Control.EX_Scan_x = Scanner_Control.Scan_x;  // 이전 x 값 저장
+	Scanner_Control.EX_Scan_y = Scanner_Control.Scan_y;  // 이전 y 값 저장
+
+	Scanner_Control.direction = 1; // 1일 때가 시계
+	G0203_Flag = 1;
+
+	Gcode_Num = strtol(Test_Gcode[1][1], NULL,16);
+	Gcode_X = strtol(Test_Gcode[1][4], NULL,16);
+	Gcode_Y = strtol(Test_Gcode[1][8], NULL,16);
+	Gcode_Z = strtol(Test_Gcode[1][12], NULL,16);
+	Gcode_I = strtol(Test_Gcode[1][16], NULL,16);
+	Gcode_J = strtol(Test_Gcode[1][20], NULL,16);
+	CS = strtol(Test_Gcode[1][24], NULL,16); // 여기는 GCode0203 이기에 F데이터의 위치가 바뀐다.
+
+	if(Test_Gcode[1][7] == "0x01"){ // I 음수표현부분
+		Gcode_X = -(Gcode_X);
+	}
+	if(Test_Gcode[1][11] == "0x01"){  // J 음수표현부분
+		Gcode_Y = -(Gcode_Y);
+	}
+	if(Test_Gcode[1][19] == "0x01"){ // I 음수표현부분
+		Gcode_I = -(Gcode_I);
+	}
+	if(Test_Gcode[1][23] == "0x01"){  // J 음수표현부분
+		Gcode_J = -(Gcode_J);
+	}
+
+
+
+	Scanner_Control.BenchMark_X = Scanner_Control.EX_Scan_x + Gcode_I; // G0203을 진행하기 위한 기준점
+	Scanner_Control.BenchMark_Y = Scanner_Control.EX_Scan_y + Gcode_J; // G0203을 진행하기 위한 기준점
+
+
+	Scanner_Control.Scan_x = Gcode_X;
+	Scanner_Control.Scan_y = Gcode_Y;
+	Scanner_Control.Scan_z = Gcode_Z;
+	Scanner_Control.Speed_Change = CS;
+
+	// 여기에 반지름 구하는 식 들어가야해
+	Scanner_Control.Scan_radius = sqrt(pow(Scanner_Control.Scan_x - Scanner_Control.BenchMark_X,2) + pow(Scanner_Control.Scan_y - Scanner_Control.BenchMark_Y,2));
+
+	/* 도형그릴 기준점 잡고 이동 */
+
+	ratio_X = Scanner_Control.BenchMark_X - Scanner_Control.EX_Scan_x;
+	ratio_Y = Scanner_Control.BenchMark_Y - Scanner_Control.EX_Scan_y;
+
+	Scanner_Control.Scan_x_temp += 851.3 * ratio_X;
+	Scanner_Control.Scan_y_temp += 851.3 * ratio_Y;
+
+
+	/* 여기에 각도 만드는 부분 필요할 듯 */
+	Scanner_Control.G_Radian = atan2(Scanner_Control.EX_Scan_y - Scanner_Control.BenchMark_Y, Scanner_Control.EX_Scan_x - Scanner_Control.BenchMark_X);
+	Scanner_Control.Move_Degree =  Scanner_Control.G_Radian * 180 / Scanner_Control.PI;
+
+	Test_Count = Scanner_Control.Move_Degree * 2;  // 얘를 통해서 처음에 시작하는 위치에 대한 값을 바꿔줘
+
+	Scanner_Control.G_Radian = atan2(Scanner_Control.EX_Scan_y - Scanner_Control.BenchMark_Y, Scanner_Control.EX_Scan_x - Scanner_Control.BenchMark_X);
+	Scanner_Control.G_Degree_1 =  Scanner_Control.G_Radian * 180 / Scanner_Control.PI;
+
+	Scanner_Control.G_Radian = atan2(Scanner_Control.Scan_y - Scanner_Control.BenchMark_Y, Scanner_Control.Scan_x - Scanner_Control.BenchMark_X);  // 이 부분 x,y값 바꿔줘 (그러면 두번째 각도가 나오고 밑에서 두각도 차 구한다음에 1도마다 test_count가 2를 차지하도록 하면돼)
+	Scanner_Control.G_Degree_2 =  Scanner_Control.G_Radian * 180 / Scanner_Control.PI;
+
+
+	///////////////////////////////////////////////////////////////////////
+		if(Scanner_Control.EX_Scan_x > 0 && Scanner_Control.EX_Scan_y > 0){ // 이전 좌표값이 1사분면
+			if((Scanner_Control.Scan_x < 0 && Scanner_Control.Scan_y < 0) || (Scanner_Control.Scan_x > 0 && Scanner_Control.Scan_y < 0)){ // 다음 좌표값이 3,4사분면
+				Scanner_Control.G_Total_Degree = Scanner_Control.G_Degree_1 - Scanner_Control.G_Degree_2;
+			}else{
+				if(Scanner_Control.G_Degree_2 > Scanner_Control.G_Degree_1){
+					Scanner_Control.G_Total_Degree = Scanner_Control.G_Degree_1 + 180 + (180 - Scanner_Control.G_Degree_2);
+				}else{
+					Scanner_Control.G_Total_Degree = Scanner_Control.G_Degree_2 - Scanner_Control.G_Degree_1;
+				}
+			 }
+	}else if(Scanner_Control.EX_Scan_x < 0 && Scanner_Control.EX_Scan_y > 0){ // 이전 좌표값이 2사분면
+		if((Scanner_Control.Scan_x < 0 && Scanner_Control.Scan_y < 0) || (Scanner_Control.Scan_x > 0 && Scanner_Control.Scan_y < 0)){ // 다음 좌표값이 3,4사분면
+			Scanner_Control.G_Total_Degree = Scanner_Control.G_Degree_1 - Scanner_Control.G_Degree_2;
+		}else{
+			if(Scanner_Control.G_Degree_2 > Scanner_Control.G_Degree_1){
+				Scanner_Control.G_Total_Degree = Scanner_Control.G_Degree_1 + 180 + (180 - Scanner_Control.G_Degree_2);
+			}else{
+				Scanner_Control.G_Total_Degree = Scanner_Control.G_Degree_2 - Scanner_Control.G_Degree_1;
+			}
+		}
+	}else if(Scanner_Control.EX_Scan_x < 0 && Scanner_Control.EX_Scan_y < 0){ // 이전 좌표값이 3사분면
+		if((Scanner_Control.Scan_x > 0 && Scanner_Control.Scan_y > 0) || (Scanner_Control.Scan_x < 0 && Scanner_Control.Scan_y > 0)){ // 다음 좌표값이 1,2사분면
+			Scanner_Control.G_Total_Degree = (180 + Scanner_Control.G_Degree_1) + (180 - Scanner_Control.G_Degree_2);
+		}else{
+			if(Scanner_Control.G_Degree_2 > Scanner_Control.G_Degree_1){
+				Scanner_Control.G_Total_Degree = (180 + Scanner_Control.G_Degree_1) + (180 - Scanner_Control.G_Degree_2);
+			}else{
+				Scanner_Control.G_Total_Degree =  (-Scanner_Control.G_Degree_2) - (-Scanner_Control.G_Degree_1);
+			}
+		}
+	}else if(Scanner_Control.EX_Scan_x > 0 && Scanner_Control.EX_Scan_y < 0){ // 이전 좌표값이 4사분면
+		if((Scanner_Control.Scan_x > 0 && Scanner_Control.Scan_y > 0) || (Scanner_Control.Scan_x < 0 && Scanner_Control.Scan_y > 0)){ // 다음 좌표값이 1,2사분면
+			Scanner_Control.G_Total_Degree = (180 + Scanner_Control.G_Degree_1) + (180 - Scanner_Control.G_Degree_2);
+		}else{
+			if(Scanner_Control.G_Degree_2 > Scanner_Control.G_Degree_1){
+				Scanner_Control.G_Total_Degree = (180 + Scanner_Control.G_Degree_1) + (180 - Scanner_Control.G_Degree_2);
+			}else{
+				Scanner_Control.G_Total_Degree = (-Scanner_Control.G_Degree_2) - (-Scanner_Control.G_Degree_1);
+			}
+		}
+	}
+
+
+	  Target_Test_Count = Test_Count + Scanner_Control.G_Total_Degree * 2;
+
+	  Save_Count = Test_Count; // 이게 맞는건가?
+	  Test_Count = 0;
+	  /////////////////////////////////////////////////////////////
+	  Scanner_Control.Figure_Flag = 1;
+	  Test_GCode_Flag = 0;  // 얘는 필요없으면 나중에 지워.
+}
+
+void GCode_03(){
+	/* G03은 시계방향 */
+	 Scanner_Control.EX_Scan_x = Scanner_Control.Scan_x;  // 이전 x 값 저장
+	 Scanner_Control.EX_Scan_y = Scanner_Control.Scan_y;  // 이전 y 값 저장
+
+
+	 Gcode_Num = strtol(Test_Gcode[1][1], NULL,16);
+	 Gcode_X = strtol(Test_Gcode[1][4], NULL,16);
+	 Gcode_Y = strtol(Test_Gcode[1][8], NULL,16);
+	 Gcode_Z = strtol(Test_Gcode[1][12], NULL,16);
+	 Gcode_I = strtol(Test_Gcode[1][16], NULL,16);
+	 Gcode_J = strtol(Test_Gcode[1][20], NULL,16);
+	 CS = strtol(Test_Gcode[1][24], NULL,16); // 여기는 GCode0203 이기에 F데이터의 위치가 바뀐다.
+
+
+	 if(Test_Gcode[1][7] == "0x01"){ // I 음수표현부분
+	 	Gcode_X = -(Gcode_X);
+	 }
+	 if(Test_Gcode[1][11] == "0x01"){  // J 음수표현부분
+	 	Gcode_Y = -(Gcode_Y);
+	 }
+	 if(Test_Gcode[1][19] == "0x01"){ // I 음수표현부분
+	 	Gcode_I = -(Gcode_I);
+	 }
+	 if(Test_Gcode[1][23] == "0x01"){  // J 음수표현부분
+	 	Gcode_J = -(Gcode_J);
+	 }
+
+	 if(Gcode_Num == 2){ // 2가 시계방향
+	 	Scanner_Control.direction = 1; // 1일 때가 시계
+	 }else if(Gcode_Num == 3){ // 3은 반시계방향
+	 	Scanner_Control.direction = 0; // 0일 때가 반시계
+	 }
+	 G0203_Flag = 1;
+
+
+	 Scanner_Control.BenchMark_X = Scanner_Control.EX_Scan_x + Gcode_I; // G0203을 진행하기 위한 기준점
+	 Scanner_Control.BenchMark_Y = Scanner_Control.EX_Scan_y + Gcode_J; // G0203을 진행하기 위한 기준점
+
+
+	 Scanner_Control.Scan_x = Gcode_X;
+	 Scanner_Control.Scan_y = Gcode_Y;
+	 Scanner_Control.Scan_z = Gcode_Z;
+	 Scanner_Control.Speed_Change = CS;
+
+	 // 여기에 반지름 구하는 식 들어가야해
+	 Scanner_Control.Scan_radius = sqrt(pow(Scanner_Control.Scan_x - Scanner_Control.BenchMark_X,2) + pow(Scanner_Control.Scan_y - Scanner_Control.BenchMark_Y,2));
+
+	 /* 도형그릴 기준점 잡고 이동 */
+
+	 ratio_X = Scanner_Control.BenchMark_X - Scanner_Control.EX_Scan_x;
+	 ratio_Y = Scanner_Control.BenchMark_Y - Scanner_Control.EX_Scan_y;
+
+	 Scanner_Control.Scan_x_temp += 851.3 * ratio_X;
+	 Scanner_Control.Scan_y_temp += 851.3 * ratio_Y;
+
+
+	 /* 여기에 각도 만드는 부분 필요할 듯 */
+	 Scanner_Control.G_Radian = atan2(Scanner_Control.EX_Scan_y - Scanner_Control.BenchMark_Y, Scanner_Control.EX_Scan_x - Scanner_Control.BenchMark_X);
+	 Scanner_Control.Move_Degree =  Scanner_Control.G_Radian * 180 / Scanner_Control.PI;
+
+	 Test_Count = Scanner_Control.Move_Degree * 2;  // 얘를 통해서 처음에 시작하는 위치에 대한 값을 바꿔줘
+
+	 Scanner_Control.G_Radian = atan2(Scanner_Control.EX_Scan_y - Scanner_Control.BenchMark_Y, Scanner_Control.EX_Scan_x - Scanner_Control.BenchMark_X);
+	 Scanner_Control.G_Degree_1 =  Scanner_Control.G_Radian * 180 / Scanner_Control.PI;
+
+	 Scanner_Control.G_Radian = atan2(Scanner_Control.Scan_y - Scanner_Control.BenchMark_Y, Scanner_Control.Scan_x - Scanner_Control.BenchMark_X);  // 이 부분 x,y값 바꿔줘 (그러면 두번째 각도가 나오고 밑에서 두각도 차 구한다음에 1도마다 test_count가 2를 차지하도록 하면돼)
+	 Scanner_Control.G_Degree_2 =  Scanner_Control.G_Radian * 180 / Scanner_Control.PI;
+
+	 ///////////////////////////////////////////// 1사분면 /////////////////////////////////////////////
+	 if(Scanner_Control.EX_Scan_x > 0 && Scanner_Control.EX_Scan_y > 0){ // 이전 좌표값이 1사분면
+	 	if((Scanner_Control.Scan_x < 0 && Scanner_Control.Scan_y < 0)||(Scanner_Control.Scan_x > 0 && Scanner_Control.Scan_y < 0)){ // 다음 좌표값이 3,4사분면
+	 		Scanner_Control.G_Total_Degree = (180 - Scanner_Control.G_Degree_1) + (180 + Scanner_Control.G_Degree_2);
+	 	}else{
+	 		if(Scanner_Control.G_Degree_1 > Scanner_Control.G_Degree_2){
+	 			Scanner_Control.G_Total_Degree = (180 - Scanner_Control.G_Degree_1) + (180 + Scanner_Control.G_Degree_2);
+	 		}else{
+	 			Scanner_Control.G_Total_Degree = Scanner_Control.G_Degree_2 - Scanner_Control.G_Degree_1;
+	 		}
+	 	}
+	 ///////////////////////////////////////////// 2사분면 /////////////////////////////////////////////
+	 }else if(Scanner_Control.EX_Scan_x < 0 && Scanner_Control.EX_Scan_y > 0){ // 이전 좌표값이 2사분면
+	 	if((Scanner_Control.Scan_x < 0 && Scanner_Control.Scan_y < 0)||(Scanner_Control.Scan_x > 0 && Scanner_Control.Scan_y < 0)){ // 다음 좌표값이 3,4사분면
+	 		Scanner_Control.G_Total_Degree = (180 - Scanner_Control.G_Degree_1) + (180 + Scanner_Control.G_Degree_2);
+	 	}else{
+	 		if(Scanner_Control.G_Degree_1 > Scanner_Control.G_Degree_2){
+	 			Scanner_Control.G_Total_Degree = (180 - Scanner_Control.G_Degree_1) + (180 + Scanner_Control.G_Degree_2);
+	 		}else{
+	 			Scanner_Control.G_Total_Degree = Scanner_Control.G_Degree_2 - Scanner_Control.G_Degree_1;
+	 		}
+	 	}
+	 ///////////////////////////////////////////// 3사분면 /////////////////////////////////////////////
+	 }else if(Scanner_Control.EX_Scan_x < 0 && Scanner_Control.EX_Scan_y < 0){ // 이전 좌표값이 3사분면
+	 	if((Scanner_Control.Scan_x > 0 && Scanner_Control.Scan_y > 0) || (Scanner_Control.Scan_x < 0 && Scanner_Control.Scan_y > 0)){ // 다음 좌표값이 1,2사분면
+	 		Scanner_Control.G_Total_Degree = - Scanner_Control.G_Degree_1 + Scanner_Control.G_Degree_2;
+	 	}else{
+	 		if(Scanner_Control.G_Degree_1 > Scanner_Control.G_Degree_2){
+	 			Scanner_Control.G_Total_Degree = - Scanner_Control.G_Degree_1 + 180 + (180 + Scanner_Control.G_Degree_2);
+	 		}else{
+	 			Scanner_Control.G_Total_Degree = - Scanner_Control.G_Degree_1 - (- Scanner_Control.G_Degree_2);
+	 		}
+	 	}
+	 ///////////////////////////////////////////// 4사분면 /////////////////////////////////////////////
+	 }else if(Scanner_Control.EX_Scan_x > 0 && Scanner_Control.EX_Scan_y < 0){ // 이전 좌표값이 4사분면
+	 	if((Scanner_Control.Scan_x > 0 && Scanner_Control.Scan_y > 0) || (Scanner_Control.Scan_x < 0 && Scanner_Control.Scan_y > 0)){ // 다음 좌표값이 1,2사분면
+	 		Scanner_Control.G_Total_Degree = - Scanner_Control.G_Degree_1 + Scanner_Control.G_Degree_2;
+	 	}else{
+	 		if(Scanner_Control.G_Degree_1 > Scanner_Control.G_Degree_2){
+	 			Scanner_Control.G_Total_Degree =  - Scanner_Control.G_Degree_1 + 180 + (180 + Scanner_Control.G_Degree_2);
+	 		}else{
+	 			Scanner_Control.G_Total_Degree = - Scanner_Control.G_Degree_1 - (- Scanner_Control.G_Degree_2);
+	 		}
+	 	}
+	 }
+
+	 Target_Test_Count = Test_Count + Scanner_Control.G_Total_Degree * 2;
+
+	 Save_Count = Test_Count; // 이게 맞는건가?
+	 Test_Count = 0;
+	 /////////////////////////////////////////////////////////////
+	 Scanner_Control.Figure_Flag = 1;
+	 Test_GCode_Flag = 0;
+}
 
 
 
@@ -285,18 +599,6 @@ int main(void)
 
 	  //CDC_Transmit_HS(gggg,strlen(gggg));
 	  //HAL_Delay(1000);
-
-
-	  if(abcdef != 0){
-
-		  abccccc = (int *)malloc(sizeof(int) * abcdef);
-
-		  for(int i = 0;i<abcdef;i++){
-			  abccccc[i] = i;
-		  }
-		  free(abccccc);
-		  abcdef = 0;
-	  }
 
 	  /*Pulse Test */
 	  fpga_status2.all = *((volatile uint16_t *)FPGA_BASE + 2);
@@ -428,8 +730,7 @@ int main(void)
 
 			/* Test Triangle */
 			if(Test_GCode_Flag == 1 && Scanner_Control.Flag == 0){
-					  if(Test_Count == 0){
-						  // ?��기에?���???????????? 만든 Gcode �????????????분에?�� x�????????????�????????????, y�????????????�???????????? �?????????????��?���???????????? ???��?��
+					  if(G_Test_Count == 0){
 						  /////////////////////////////////////////////////////////////
 						/*  Change_Gcode = (char *)Test_Gcode[0][4];
 						  Gcode_X = strtol(Change_Gcode, NULL,16);
@@ -438,67 +739,204 @@ int main(void)
 						  Change_Gcode = (char *)Test_Gcode[0][12];
 						  Gcode_Z = strtol(Change_Gcode, NULL,16);  */
 
-						  Gcode_X = strtol(Test_Gcode[0][4], NULL,16);
-						  Gcode_Y = strtol(Test_Gcode[0][8], NULL,16);
-						  Gcode_Z = strtol(Test_Gcode[0][12], NULL,16);
-						  CS = strtol(Test_Gcode[0][16], NULL,16);
 
+						  GCode_01();
 
-						  Scanner_Control.Scan_x = Gcode_X; // 20
-						  Scanner_Control.Scan_y = Gcode_Y; // 0
-						  Scanner_Control.Scan_z = Gcode_Z;
-						  Scanner_Control.Speed_Change = CS;
-						  /////////////////////////////////////////////////////////////
-						  Scanner_Control.Flag = 1;
-						  Test_Count = 1;
-					  }else if(Test_Count == 1){
-						  Scanner_Control.EX_Scan_x = Scanner_Control.Scan_x;  // 이전 x 값 저장
-						  Scanner_Control.EX_Scan_y = Scanner_Control.Scan_y;  // 이전 y 값 저장
+//						  Gcode_X = strtol(Test_Gcode[0][4], NULL,16);
+//						  Gcode_Y = strtol(Test_Gcode[0][8], NULL,16);
+//						  Gcode_Z = strtol(Test_Gcode[0][12], NULL,16);
+//						  CS = strtol(Test_Gcode[0][16], NULL,16);
+//
+//
+//						  Scanner_Control.Scan_x = Gcode_X; // 20
+//						  Scanner_Control.Scan_y = Gcode_Y; // 0
+//						  Scanner_Control.Scan_z = Gcode_Z;
+//						  Scanner_Control.Speed_Change = CS;
+//						  /////////////////////////////////////////////////////////////
+//						  Scanner_Control.Flag = 1;
+						  G_Test_Count = 1;
+					  }else if(G_Test_Count == 1){
+						  GCode_03();
 
-						  //Scanner_Control.Scan_y_temp = 32767;
+						  //Scanner_Control.Laser_Flag = 0;
 
-						  Gcode_X = strtol(Test_Gcode[1][4], NULL,16);
-						  Gcode_Y = strtol(Test_Gcode[1][8], NULL,16);
-						  Gcode_Z = strtol(Test_Gcode[1][12], NULL,16);
-						  Gcode_I = strtol(Test_Gcode[1][16], NULL,16);
-						  Gcode_J = strtol(Test_Gcode[1][20], NULL,16);
-						  CS = strtol(Test_Gcode[1][24], NULL,16); // 여기는 GCode0203 이기에 F데이터의 위치가 바뀐다.
-
-						  if(Test_Gcode[1][19] == "0x01"){ // I 음수표현부분
-							  Gcode_I = -(Gcode_I);
-						  }else if(Test_Gcode[1][23] == "0x01"){  // J 음수표현부분
-							  Gcode_J = -(Gcode_J);
-						  }
-
-						  Scanner_Control.BenchMark_X = Scanner_Control.EX_Scan_x + Gcode_I; // G0203을 진행하기 위한 기준점
-						  Scanner_Control.BenchMark_Y = Scanner_Control.EX_Scan_y + Gcode_J; // G0203을 진행하기 위한 기준점
-
-
-						  Scanner_Control.Scan_x = Gcode_X;
-						  Scanner_Control.Scan_y = Gcode_Y;
-						  Scanner_Control.Scan_z = Gcode_Z;
-						  Scanner_Control.Speed_Change = CS;
-
-						  // 여기에 반지름 구하는 식 들어가야해
-						  Scanner_Control.Scan_radius = sqrt(pow(Scanner_Control.Scan_x - Scanner_Control.BenchMark_X,2) + pow(Scanner_Control.Scan_y - Scanner_Control.BenchMark_Y,2));
-
-						  /* 도형그릴 기준점 잡고 이동 */
-
-						  aaaaa = Scanner_Control.BenchMark_X - Scanner_Control.EX_Scan_x;
-						  bbbbb = Scanner_Control.BenchMark_Y - Scanner_Control.EX_Scan_y;
-
-						  Scanner_Control.Scan_x_temp += 851.3 * aaaaa;
-						  Scanner_Control.Scan_y_temp += 851.3 * bbbbb;
-						  //Scanner_Control.Scan_x_wobble = Scanner_Control.Scan_x_temp;
-						  //Scanner_Control.Scan_y_wobble = Scanner_Control.Scan_y_temp;
-
-						  /////////////////////////////////////////////////////////////
-						  Scanner_Control.Figure_Flag = 1;
-						  //Scanner_Control.Flag = 1;
-						  //Test_Count = 2;
-						  Test_Count = 0;
-						  Test_GCode_Flag = 0;
-					  }else if(Test_Count == 2){
+//						  Scanner_Control.EX_Scan_x = Scanner_Control.Scan_x;  // 이전 x 값 저장
+//						  Scanner_Control.EX_Scan_y = Scanner_Control.Scan_y;  // 이전 y 값 저장
+//
+//						  //Scanner_Control.Scan_y_temp = 32767;
+//
+//						  Gcode_Num = strtol(Test_Gcode[1][1], NULL,16);
+//						  Gcode_X = strtol(Test_Gcode[1][4], NULL,16);
+//						  Gcode_Y = strtol(Test_Gcode[1][8], NULL,16);
+//						  Gcode_Z = strtol(Test_Gcode[1][12], NULL,16);
+//						  Gcode_I = strtol(Test_Gcode[1][16], NULL,16);
+//						  Gcode_J = strtol(Test_Gcode[1][20], NULL,16);
+//						  CS = strtol(Test_Gcode[1][24], NULL,16); // 여기는 GCode0203 이기에 F데이터의 위치가 바뀐다.
+//
+//
+//						  if(Test_Gcode[1][7] == "0x01"){ // I 음수표현부분
+//						  		Gcode_X = -(Gcode_X);
+//						  }
+//						   if(Test_Gcode[1][11] == "0x01"){  // J 음수표현부분
+//						  		Gcode_Y = -(Gcode_Y);
+//						  }
+//						  if(Test_Gcode[1][19] == "0x01"){ // I 음수표현부분
+//							  Gcode_I = -(Gcode_I);
+//						  }
+//						  if(Test_Gcode[1][23] == "0x01"){  // J 음수표현부분
+//							  Gcode_J = -(Gcode_J);
+//						  }
+//
+//
+//						  if(Gcode_Num == 2){ // 2가 시계방향
+//						  		Scanner_Control.direction = 1; // 1일 때가 시계
+//						  }else if(Gcode_Num == 3){ // 3은 반시계방향
+//						  		Scanner_Control.direction = 0; // 0일 때가 반시계
+//						  }
+//						  G0203_Flag = 1;
+//
+//						  Scanner_Control.BenchMark_X = Scanner_Control.EX_Scan_x + Gcode_I; // G0203을 진행하기 위한 기준점
+//						  Scanner_Control.BenchMark_Y = Scanner_Control.EX_Scan_y + Gcode_J; // G0203을 진행하기 위한 기준점
+//
+//
+//						  Scanner_Control.Scan_x = Gcode_X;
+//						  Scanner_Control.Scan_y = Gcode_Y;
+//						  Scanner_Control.Scan_z = Gcode_Z;
+//						  Scanner_Control.Speed_Change = CS;
+//
+//						  // 여기에 반지름 구하는 식 들어가야해
+//						  Scanner_Control.Scan_radius = sqrt(pow(Scanner_Control.Scan_x - Scanner_Control.BenchMark_X,2) + pow(Scanner_Control.Scan_y - Scanner_Control.BenchMark_Y,2));
+//
+//						  /* 도형그릴 기준점 잡고 이동 */
+//
+//						  ratio_X = Scanner_Control.BenchMark_X - Scanner_Control.EX_Scan_x;
+//						  ratio_Y = Scanner_Control.BenchMark_Y - Scanner_Control.EX_Scan_y;
+//
+//						  Scanner_Control.Scan_x_temp += 851.3 * ratio_X;
+//						  Scanner_Control.Scan_y_temp += 851.3 * ratio_Y;
+//						  //Scanner_Control.Scan_x_wobble = Scanner_Control.Scan_x_temp;
+//						  //Scanner_Control.Scan_y_wobble = Scanner_Control.Scan_y_temp;
+//
+//						  /* 여기에 각도 만드는 부분 필요할 듯 */
+//						  Scanner_Control.G_Radian = atan2(Scanner_Control.EX_Scan_y - Scanner_Control.BenchMark_Y, Scanner_Control.EX_Scan_x - Scanner_Control.BenchMark_X);
+//						  Scanner_Control.Move_Degree =  Scanner_Control.G_Radian * 180 / Scanner_Control.PI;
+//
+//						  Test_Count = Scanner_Control.Move_Degree * 2;  // 얘를 통해서 처음에 시작하는 위치에 대한 값을 바꿔줘
+//
+//						  Scanner_Control.G_Radian = atan2(Scanner_Control.EX_Scan_y - Scanner_Control.BenchMark_Y, Scanner_Control.EX_Scan_x - Scanner_Control.BenchMark_X);
+//						  Scanner_Control.G_Degree_1 =  Scanner_Control.G_Radian * 180 / Scanner_Control.PI;
+//
+//						  Scanner_Control.G_Radian = atan2(Scanner_Control.Scan_y - Scanner_Control.BenchMark_Y, Scanner_Control.Scan_x - Scanner_Control.BenchMark_X);  // 이 부분 x,y값 바꿔줘 (그러면 두번째 각도가 나오고 밑에서 두각도 차 구한다음에 1도마다 test_count가 2를 차지하도록 하면돼)
+//						  Scanner_Control.G_Degree_2 =  Scanner_Control.G_Radian * 180 / Scanner_Control.PI;
+//
+//						  if(Gcode_Num == 2){
+//							  if(Scanner_Control.EX_Scan_x > 0 && Scanner_Control.EX_Scan_y > 0){ // 이전 좌표값이 1사분면
+//								  if((Scanner_Control.Scan_x < 0 && Scanner_Control.Scan_y < 0) || (Scanner_Control.Scan_x > 0 && Scanner_Control.Scan_y < 0)){ // 다음 좌표값이 3,4사분면
+//									  Scanner_Control.G_Total_Degree = Scanner_Control.G_Degree_1 - Scanner_Control.G_Degree_2;
+//								  }else{
+//									  if(Scanner_Control.G_Degree_2 > Scanner_Control.G_Degree_1){
+//										  Scanner_Control.G_Total_Degree = Scanner_Control.G_Degree_1 + 180 + (180 - Scanner_Control.G_Degree_2);
+//									  }else{
+//										  Scanner_Control.G_Total_Degree = Scanner_Control.G_Degree_2 - Scanner_Control.G_Degree_1;
+//									  }
+//								  }
+//							  }else if(Scanner_Control.EX_Scan_x < 0 && Scanner_Control.EX_Scan_y > 0){ // 이전 좌표값이 2사분면
+//								  if((Scanner_Control.Scan_x < 0 && Scanner_Control.Scan_y < 0) || (Scanner_Control.Scan_x > 0 && Scanner_Control.Scan_y < 0)){ // 다음 좌표값이 3,4사분면
+//									  Scanner_Control.G_Total_Degree = Scanner_Control.G_Degree_1 - Scanner_Control.G_Degree_2;
+//								  }else{
+//									  if(Scanner_Control.G_Degree_2 > Scanner_Control.G_Degree_1){
+//										  Scanner_Control.G_Total_Degree = Scanner_Control.G_Degree_1 + 180 + (180 - Scanner_Control.G_Degree_2);
+//									  }else{
+//										  Scanner_Control.G_Total_Degree = Scanner_Control.G_Degree_2 - Scanner_Control.G_Degree_1;
+//									  }
+//								  }
+//							  }else if(Scanner_Control.EX_Scan_x < 0 && Scanner_Control.EX_Scan_y < 0){ // 이전 좌표값이 3사분면
+//								  if((Scanner_Control.Scan_x > 0 && Scanner_Control.Scan_y > 0) || (Scanner_Control.Scan_x < 0 && Scanner_Control.Scan_y > 0)){ // 다음 좌표값이 1,2사분면
+//									  Scanner_Control.G_Total_Degree = (180 + Scanner_Control.G_Degree_1) + (180 - Scanner_Control.G_Degree_2);
+//								  }else{
+//									  if(Scanner_Control.G_Degree_2 > Scanner_Control.G_Degree_1){
+//										  Scanner_Control.G_Total_Degree = (180 + Scanner_Control.G_Degree_1) + (180 - Scanner_Control.G_Degree_2);
+//									  }else{
+//										  Scanner_Control.G_Total_Degree =  (-Scanner_Control.G_Degree_2) - (-Scanner_Control.G_Degree_1);
+//									  }
+//								  }
+//							  }else if(Scanner_Control.EX_Scan_x > 0 && Scanner_Control.EX_Scan_y < 0){ // 이전 좌표값이 4사분면
+//								  if((Scanner_Control.Scan_x > 0 && Scanner_Control.Scan_y > 0) || (Scanner_Control.Scan_x < 0 && Scanner_Control.Scan_y > 0)){ // 다음 좌표값이 1,2사분면
+//									  Scanner_Control.G_Total_Degree = (180 + Scanner_Control.G_Degree_1) + (180 - Scanner_Control.G_Degree_2);
+//								  }else{
+//									  if(Scanner_Control.G_Degree_2 > Scanner_Control.G_Degree_1){
+//										  Scanner_Control.G_Total_Degree = (180 + Scanner_Control.G_Degree_1) + (180 - Scanner_Control.G_Degree_2);
+//									  }else{
+//										  Scanner_Control.G_Total_Degree = (-Scanner_Control.G_Degree_2) - (-Scanner_Control.G_Degree_1);
+//									  }
+//								  }
+//							  }
+//						  }
+//						 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//						  else if(Gcode_Num == 3){ // Num이 3일 때가 반시계방향
+//							  ///////////////////////////////////////////// 1사분면 /////////////////////////////////////////////
+//							  if(Scanner_Control.EX_Scan_x > 0 && Scanner_Control.EX_Scan_y > 0){ // 이전 좌표값이 1사분면
+//								  if((Scanner_Control.Scan_x < 0 && Scanner_Control.Scan_y < 0)||(Scanner_Control.Scan_x > 0 && Scanner_Control.Scan_y < 0)){ // 다음 좌표값이 3,4사분면
+//									  Scanner_Control.G_Total_Degree = (180 - Scanner_Control.G_Degree_1) + (180 + Scanner_Control.G_Degree_2);
+//								  }else{
+//									  if(Scanner_Control.G_Degree_1 > Scanner_Control.G_Degree_2){
+//										  Scanner_Control.G_Total_Degree = (180 - Scanner_Control.G_Degree_1) + (180 + Scanner_Control.G_Degree_2);
+//									  }else{
+//										  Scanner_Control.G_Total_Degree = Scanner_Control.G_Degree_2 - Scanner_Control.G_Degree_1;
+//									  }
+//								  }
+//								  ///////////////////////////////////////////// 2사분면 /////////////////////////////////////////////
+//							  }else if(Scanner_Control.EX_Scan_x < 0 && Scanner_Control.EX_Scan_y > 0){ // 이전 좌표값이 2사분면
+//								  if((Scanner_Control.Scan_x < 0 && Scanner_Control.Scan_y < 0)||(Scanner_Control.Scan_x > 0 && Scanner_Control.Scan_y < 0)){ // 다음 좌표값이 3,4사분면
+//									  Scanner_Control.G_Total_Degree = (180 - Scanner_Control.G_Degree_1) + (180 + Scanner_Control.G_Degree_2);
+//								  }
+//								  else{
+//									  if(Scanner_Control.G_Degree_1 > Scanner_Control.G_Degree_2){
+//										  Scanner_Control.G_Total_Degree = (180 - Scanner_Control.G_Degree_1) + (180 + Scanner_Control.G_Degree_2);
+//									  }else{
+//										  Scanner_Control.G_Total_Degree = Scanner_Control.G_Degree_2 - Scanner_Control.G_Degree_1;
+//									  }
+//								  }
+//								  ///////////////////////////////////////////// 3사분면 /////////////////////////////////////////////
+//							  }else if(Scanner_Control.EX_Scan_x < 0 && Scanner_Control.EX_Scan_y < 0){ // 이전 좌표값이 3사분면
+//								  if((Scanner_Control.Scan_x > 0 && Scanner_Control.Scan_y > 0) || (Scanner_Control.Scan_x < 0 && Scanner_Control.Scan_y > 0)){ // 다음 좌표값이 1,2사분면
+//									  Scanner_Control.G_Total_Degree = - Scanner_Control.G_Degree_1 + Scanner_Control.G_Degree_2;
+//								  }else{
+//									  if(Scanner_Control.G_Degree_1 > Scanner_Control.G_Degree_2){
+//										  Scanner_Control.G_Total_Degree = - Scanner_Control.G_Degree_1 + 180 + (180 + Scanner_Control.G_Degree_2);
+//									  }else{
+//										  Scanner_Control.G_Total_Degree = - Scanner_Control.G_Degree_1 - (- Scanner_Control.G_Degree_2);
+//									  }
+//								  }
+//								  ///////////////////////////////////////////// 4사분면 /////////////////////////////////////////////
+//							  }else if(Scanner_Control.EX_Scan_x > 0 && Scanner_Control.EX_Scan_y < 0){ // 이전 좌표값이 4사분면
+//								  if((Scanner_Control.Scan_x > 0 && Scanner_Control.Scan_y > 0) || (Scanner_Control.Scan_x < 0 && Scanner_Control.Scan_y > 0)){ // 다음 좌표값이 1,2사분면
+//									  Scanner_Control.G_Total_Degree = - Scanner_Control.G_Degree_1 + Scanner_Control.G_Degree_2;
+//								  }else{
+//									  if(Scanner_Control.G_Degree_1 > Scanner_Control.G_Degree_2){
+//										  Scanner_Control.G_Total_Degree =  - Scanner_Control.G_Degree_1 + 180 + (180 + Scanner_Control.G_Degree_2);
+//									  }else{
+//										  Scanner_Control.G_Total_Degree = - Scanner_Control.G_Degree_1 - (- Scanner_Control.G_Degree_2);
+//									  }
+//								  }
+//
+//							  }
+//						  }
+//
+//
+//
+//						  //Scanner_Control.G_Total_Degree = Scanner_Control.G_Degree_1 - Scanner_Control.G_Degree_2;
+//						  Target_Test_Count = Test_Count + Scanner_Control.G_Total_Degree * 2;
+//
+//						  Save_Count = Test_Count; // 이게 맞는건가?
+//						  Test_Count = 0;
+//						  /////////////////////////////////////////////////////////////
+//						  Scanner_Control.Figure_Flag = 1;
+//						  //Scanner_Control.Flag = 1;
+//						  //Test_Count = 2;
+//						  G_Test_Count = 10;
+//						  Test_GCode_Flag = 0;
+					  }else if(G_Test_Count == 2){
 						  // ?��기에?���???????????? 만든 Gcode �????????????분에?�� x�????????????�????????????, y�????????????�???????????? �?????????????��?���???????????? ???��?��
 						  /////////////////////////////////////////////////////////////
 						  Gcode_X = strtol(Test_Gcode[2][4], NULL,16);
@@ -512,7 +950,7 @@ int main(void)
 						  Scanner_Control.Speed_Change = CS;
 						  /////////////////////////////////////////////////////////////
 						  Scanner_Control.Flag = 1;
-						  Test_Count = 0;
+						  G_Test_Count = 0;
 						  Test_GCode_Flag = 0;
 					  }
 			}
@@ -526,7 +964,7 @@ int main(void)
 
 
 			/* Laser Output Control */
-			if(Laser_Flag == 1)
+			if(Scanner_Control.Laser_Flag == 1)
 			{
 				fpga_cmd0.bit.Laser_Ctrl = 1;
 				*((volatile uint16_t *)FPGA_BASE + 32) = fpga_cmd0.all;
@@ -634,40 +1072,64 @@ int main(void)
 			}   */
 
 			if(Scanner_Control.Figure_Flag == 1 && Scanner_Control.Flag == 0){
-				if(Test_Count == 1){
-					Laser_Flag = 1;
+				if(G0203_Flag == 1){   // Gcode 시험할때 test_Count값에 따라 Laser_Flag 값 세팅하는거 수정해
+					if(Test_Count == 1){  // Laser ON
+						Scanner_Control.Laser_Flag = 1;
+					}
 				}
 
+				if(Test_Count_Flag == 0){
+					Pri_Test_Count = Test_Count;
+					Test_Count_Flag= 1;
+				}
+
+				/* 맨처음에 딱 한번 이전 Test_Count 값을 저장하도록 해야해 */
+
 				if(Scanner_Control.direction == 0){
-					if(Scanner_Control.Figure_Angle >= 7){
-						Scanner_Control.Angle = Test_Count * 2 * Scanner_Control.PI / 720;
+					if(G0203_Flag == 0){
+						if(Scanner_Control.Figure_Angle >= 7){
+							Scanner_Control.Angle = Test_Count * 2 * Scanner_Control.PI / 720;
 
-						input_X = cos(Scanner_Control.Angle) * Scanner_Control.Scan_radius + Scanner_Control.BenchMark_X;
-						input_Y = sin(Scanner_Control.Angle) * Scanner_Control.Scan_radius + Scanner_Control.BenchMark_Y;
+							input_X = cos(Scanner_Control.Angle) * Scanner_Control.Scan_radius + Scanner_Control.BenchMark_X; // 기준점 * 각도를 해야되려나(sin,cos)
+							input_Y = sin(Scanner_Control.Angle) * Scanner_Control.Scan_radius + Scanner_Control.BenchMark_Y;
 
-						//input_X = cos(Scanner_Control.Angle) * Scanner_Control.Scan_radius;
-						//input_Y = sin(Scanner_Control.Angle) * Scanner_Control.Scan_radius;
-					}else{
-						Scanner_Control.Angle = Test_Count * 2 * Scanner_Control.PI / Scanner_Control.Figure_Angle;
+							//input_X = cos(Scanner_Control.Angle) * Scanner_Control.Scan_radius;
+							//input_Y = sin(Scanner_Control.Angle) * Scanner_Control.Scan_radius;
+						}else{
+							Scanner_Control.Angle = Test_Count * 2 * Scanner_Control.PI / Scanner_Control.Figure_Angle;
 
-						input_X = cos(Scanner_Control.Angle) * Scanner_Control.Scan_radius + Scanner_Control.BenchMark_X;
-						input_Y = sin(Scanner_Control.Angle) * Scanner_Control.Scan_radius + Scanner_Control.BenchMark_Y;
+							input_X = cos(Scanner_Control.Angle) * Scanner_Control.Scan_radius + Scanner_Control.BenchMark_X;
+							input_Y = sin(Scanner_Control.Angle) * Scanner_Control.Scan_radius + Scanner_Control.BenchMark_Y;
+						}
+					}else{ // 이때가 G0203에 대한 처리부분
+						if(Scanner_Control.Figure_Angle >= 7){
+							Scanner_Control.Angle = (Save_Count + Test_Count) * 2 * Scanner_Control.PI / 720; // ??
+
+							input_X = cos(Scanner_Control.Angle) * Scanner_Control.Scan_radius + Scanner_Control.BenchMark_X;
+							input_Y = sin(Scanner_Control.Angle) * Scanner_Control.Scan_radius + Scanner_Control.BenchMark_Y;
+						}
 					}
 				}
 				else{
-					if(Scanner_Control.Figure_Angle >= 7){
-						Scanner_Control.Angle = (720 - Test_Count) * 2 * Scanner_Control.PI / 720;
+					if(G0203_Flag == 0){
+						if(Scanner_Control.Figure_Angle >= 7){
+							Scanner_Control.Angle = (720 - Test_Count) * 2 * Scanner_Control.PI / 720;
 
-						input_X = cos(Scanner_Control.Angle) * Scanner_Control.Scan_radius + Scanner_Control.BenchMark_X;
-						input_Y = sin(Scanner_Control.Angle) * Scanner_Control.Scan_radius + Scanner_Control.BenchMark_Y;
-					}else{
-						Scanner_Control.Angle = (Scanner_Control.Figure_Angle - Test_Count) * 2 * Scanner_Control.PI / Scanner_Control.Figure_Angle;
+							input_X = cos(Scanner_Control.Angle) * Scanner_Control.Scan_radius + Scanner_Control.BenchMark_X;
+							input_Y = sin(Scanner_Control.Angle) * Scanner_Control.Scan_radius + Scanner_Control.BenchMark_Y;
+						}else{
+							Scanner_Control.Angle = (Scanner_Control.Figure_Angle - Test_Count) * 2 * Scanner_Control.PI / Scanner_Control.Figure_Angle;
 
-						input_X = cos(Scanner_Control.Angle) * Scanner_Control.Scan_radius + Scanner_Control.BenchMark_X;
-						input_Y = sin(Scanner_Control.Angle) * Scanner_Control.Scan_radius + Scanner_Control.BenchMark_Y;
+							input_X = cos(Scanner_Control.Angle) * Scanner_Control.Scan_radius + Scanner_Control.BenchMark_X;
+							input_Y = sin(Scanner_Control.Angle) * Scanner_Control.Scan_radius + Scanner_Control.BenchMark_Y;
+						}
+					}else{ // 이때가 G0203에 대한 처리부분
+						if(Scanner_Control.Figure_Angle >= 7){
+							Scanner_Control.Angle = (Save_Count - Test_Count) * 2 * Scanner_Control.PI / 720; // ??
 
-						//Scanner_Control.Scan_radius_dist_x = Scanner_Control.Scan_radius; //* Scanner_Control.Scan_x_scale_mm;
-						//Scanner_Control.Scan_radius_dist_y = Scanner_Control.Scan_radius; //* Scanner_Control.Scan_y_scale_mm;
+							input_X = cos(Scanner_Control.Angle) * Scanner_Control.Scan_radius + Scanner_Control.BenchMark_X;
+							input_Y = sin(Scanner_Control.Angle) * Scanner_Control.Scan_radius + Scanner_Control.BenchMark_Y;
+						}
 					}
 				}
 
@@ -676,22 +1138,35 @@ int main(void)
 				Scanner_Control.Flag = 1;
 
 				Test_Count++;
-				if(Test_Count == 180){
-					Gcode_Y = 1;
 
-				}
+			/*	if(Test_Count == 180){
+					Gcode_Y = 1;   // 이거 뭐야
+				}   */
 
 				if(Scanner_Control.Figure_Angle >= 7){
-					if(Test_Count > 720){
+					if(G0203_Flag == 1){
+						if(Test_Count > Target_Test_Count - Save_Count){  // 여기는 720이 아니라 우리가 만든 target에 대한 값이 들어가 있어야해
 							Test_Count = 0;
-							Laser_Flag = 0;
+							Scanner_Control.Laser_Flag = 0;
 							Scanner_Control.Figure_Flag = 0;
+							Test_Count_Flag= 0;
+						}
+					}else{
+						if(Test_Count > 720){
+							Test_Count = 0;
+						}else if(Test_Count == Pri_Test_Count){  // 한바퀴 다 돌았을 때 종료조건   // 원래는 > 720
+							Test_Count = 0;
+							Scanner_Control.Laser_Flag = 0;
+							Scanner_Control.Figure_Flag = 0;
+							Test_Count_Flag= 0;
+						}
 					}
 				}else{
-					if(Test_Count > (Scanner_Control.Figure_Angle + 1)){    // Test_Count > (Scanner_Control.Figure_Angle + 1)
+					if(Test_Count > (Scanner_Control.Figure_Angle + 1)){    // Test_Count > (Scanner_Control.Figure_Angle + 1)  // 한바퀴 다 돌았을 때 종료조건
 							Test_Count = 0;
-							Laser_Flag = 0;
+							Scanner_Control.Laser_Flag = 0;
 							Scanner_Control.Figure_Flag = 0;
+							Test_Count_Flag= 0;
 					}
 				}
 
@@ -1400,6 +1875,8 @@ void Error_Handler(void)
 
   /* USER CODE END Error_Handler_Debug */
 }
+
+
 
 #ifdef  USE_FULL_ASSERT
 /**

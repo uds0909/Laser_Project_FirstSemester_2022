@@ -460,6 +460,7 @@ void Scanner_Line_Draw_Re(_Scanner_Control* in){
 			in->Scan_Y_Flag = 0;
 			Correction_Count_height = 0;
 			Correction_Count_width = 0;
+			//in->Laser_Flag = 0;
 	}
 }
 
@@ -520,6 +521,7 @@ void Scanner_Line_Draw_RERE(_Scanner_Control* in)
 		in->Flag = 0;
 		Correction_Count_height = 0;
 		Correction_Count_width = 0;
+		//in->Laser_Flag = 0;
 	}
 }
 
@@ -544,115 +546,6 @@ void Scanner_Wobble_Circle(_Scanner_Control* in)
 }
 
 
-/*
-void Scanner_Circle_Draw(_Scanner_Control* in){
-	for(int angle = 0;angle<= 360;angle++){
-		int input_X = cos(in->Angle) * in->Scan_radius_dist;
-		int input_Y = sin(in->Angle) * in->Scan_radius_dist;
-
-		int Set_Flag = 1;
-		/////////////////////////////////////////////////////////////////////////////
-		while(Set_Flag != 0){
-		if(input_X != in->Scan_x_temp - 32767)
-			{
-				if(input_X > in->Scan_x_temp - 32767)
-				{
-					in->Scan_x_trans += (int)in->Scan_stepsize;
-					in->Scan_x_temp = in->Scan_x_trans + 32767;
-				}
-				else
-				{
-					in->Scan_x_trans -= (int)in->Scan_stepsize;
-					in->Scan_x_temp = in->Scan_x_trans + 32767;
-				}
-			}
-
-			if(input_Y != in->Scan_y_temp - 32767)
-			{
-				if(input_Y > in->Scan_y_temp - 32767)
-				{
-					in->Scan_y_trans += (int)in->Scan_stepsize;
-					in->Scan_y_temp = in->Scan_y_trans + 32767;
-				}
-				else
-				{
-					in->Scan_y_trans -= (int)in->Scan_stepsize;
-					in->Scan_y_temp = in->Scan_y_trans + 32767;
-				}
-			}
-
-
-			if((((input_X + 32767 - in->Scan_stepsize) <= in->Scan_x_temp) &&
-					((input_X + 32767 + in->Scan_stepsize) >= in->Scan_x_temp)) &&
-					(((input_Y + 32767 - in->Scan_stepsize) <= in->Scan_y_temp) &&
-							((input_Y + 32767 + in->Scan_stepsize) >= in->Scan_y_temp))){
-				Set_Flag = 0;
-				abcd++;
-			}
-		}
-	}
-
-}    */
-
-// 테스트용 함수
-/*
-void Center_Wobble(_Scanner_Control* in)
-{
-	if(in->Scan_x_dist_virtual != in->Scan_x_temp - 32767)
-	{
-		if(in->Scan_x_dist_virtual > in->Scan_x_temp - 32767)
-		{
-			in->Scan_x_trans += (int)in->Scan_stepsize;
-			in->Scan_x_temp = in->Scan_x_trans + 32767;
-		}
-		else
-		{
-			in->Scan_x_trans -= (int)in->Scan_stepsize;
-			in->Scan_x_temp = in->Scan_x_trans + 32767;
-		}
-	}
-
-	if(in->Scan_y_dist_virtual != in->Scan_y_temp - 32767)
-	{
-		if(in->Scan_y_dist_virtual > in->Scan_y_temp - 32767)
-		{
-			in->Scan_y_trans += (int)in->Scan_stepsize;
-			in->Scan_y_temp = in->Scan_y_trans + 32767;
-		}
-		else
-		{
-			in->Scan_y_trans -= (int)in->Scan_stepsize;
-			in->Scan_y_temp = in->Scan_y_trans + 32767;
-		}
-	}
-}   */
 
 
 
-/*
-	if(scan_x_dist != scan_x_temp)
-	{
-		if(scan_x_dist > scan_x_temp)
-			//scan_x_temp += (scan_stepsize * scan_x_dist / scan_xy_dist * 0.829556);
-			scan_x_temp += (int)scan_stepsize;
-		else
-			//scan_x_temp -= (scan_stepsize * scan_x_dist / scan_xy_dist * 0.829556);
-			scan_x_temp -= (int)scan_stepsize;
-	}
-
-	if(scan_y_dist != scan_y_temp)
-	{
-		if(scan_y_dist > scan_y_temp)
-			//scan_y_temp += (scan_stepsize * scan_y_dist / scan_xy_dist * 0.897739);
-			scan_y_temp += (int)scan_stepsize;
-		else
-			//scan_y_temp -= (scan_stepsize * scan_y_dist / scan_xy_dist * 0.897739);
-			scan_y_temp -= (int)scan_stepsize;
-	}
-
-	scan_x_dist = scan_x * scan_x_mm;
-	scan_y_dist = scan_y * scan_y_mm;
-	scan_xy_dist = (sqrt(scan_x_dist*scan_x_dist + scan_y_dist*scan_y_dist));
-	scan_x_dist = scan_x * scan_x_mm;
-	scan_y_dist = 32767 + scan_y * scan_y_mm;
- */
